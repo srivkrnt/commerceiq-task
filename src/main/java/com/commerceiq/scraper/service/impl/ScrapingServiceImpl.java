@@ -10,11 +10,13 @@ import com.commerceiq.scraper.service.ScrapingService;
 import com.commerceiq.scraper.util.UrlUtil;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.lang.model.util.Elements;
 import java.io.IOException;
 import java.util.List;
 
@@ -47,14 +49,20 @@ public class ScrapingServiceImpl implements ScrapingService {
     public ProductDetailResponseDto getProductDetails(String urlOrSku, Byte retailerId) throws IOException {
         String url = urlUtil.formUrl(urlOrSku, retailerId);
         logger.info("Formed Url :: {}", url);
-        Document pageHtml = getPageHtml(url);
-        ProductDetailResponseDto productDetailResponseDto = detailResponseBuilder.build(pageHtml, retailerId);
-        productDetailService.createEntry(productDetailResponseDto, url);
-        return productDetailResponseDto;
+        try {
+            Document pageHtml = getPageHtml(url);
+            ProductDetailResponseDto productDetailResponseDto = detailResponseBuilder.build(pageHtml, retailerId);
+            productDetailService.createEntry(productDetailResponseDto, url);
+            return productDetailResponseDto;
+        }catch (Exception exception){
+            logger.error("Failed to get product details :: {}", exception.toString());
+            return null;
+        }
     }
 
     private Document getPageHtml(String url) throws IOException {
         Document pageContent = Jsoup.connect(url).get();
         return pageContent;
     }
+
 }

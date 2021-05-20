@@ -1,8 +1,10 @@
 package com.commerceiq.scraper.controller;
 
 import com.commerceiq.scraper.Application;
+import com.commerceiq.scraper.constants.LabelConstants;
 import com.commerceiq.scraper.dto.PriceTrendResponseDto;
 import com.commerceiq.scraper.dto.ProductDetailResponseDto;
+import com.commerceiq.scraper.dto.ResponseFailureDTO;
 import com.commerceiq.scraper.entity.ProductDetail;
 import com.commerceiq.scraper.service.ProductDetailService;
 import com.commerceiq.scraper.service.ScrapingService;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 public class DetailController {
@@ -41,6 +44,11 @@ public class DetailController {
                                                @RequestParam Byte retailerId) throws IOException {
         logger.info("Getting product details for retailerId :: {} and urlOrSku :: {}", retailerId, urlOrSku);
         ProductDetailResponseDto productDetails = scrapingService.getProductDetails(urlOrSku, retailerId);
+        if(Objects.isNull(productDetails)) {
+            return new ResponseEntity<>(ResponseFailureDTO.builder()
+                    .message(LabelConstants.SKU_URL_WRONG)
+                    .statusCode(HttpStatus.NOT_FOUND.toString()).build(), HttpStatus.OK);
+        }
         return new ResponseEntity<>(productDetails, HttpStatus.OK);
     }
 
@@ -53,7 +61,7 @@ public class DetailController {
 
     @GetMapping("price-trend")
     private ResponseEntity<?> priceTrend(@RequestParam String urlOrSku,
-                                         @RequestParam Byte retailerId) throws IOException {
+                                         @RequestParam Byte retailerId) {
         logger.info("Getting price trend for retailerId :: {} and urlOrSku :: {}", retailerId, urlOrSku);
         PriceTrendResponseDto priceTrend = productDetailService.getPriceTrend(urlOrSku, retailerId);
         return new ResponseEntity<>(priceTrend, HttpStatus.OK);
