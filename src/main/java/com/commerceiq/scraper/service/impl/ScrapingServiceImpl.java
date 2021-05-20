@@ -1,6 +1,7 @@
 package com.commerceiq.scraper.service.impl;
 
 import com.commerceiq.scraper.builder.DetailResponseBuilder;
+import com.commerceiq.scraper.controller.DetailController;
 import com.commerceiq.scraper.db.InMemDb;
 import com.commerceiq.scraper.dto.ProductDetailResponseDto;
 import com.commerceiq.scraper.entity.ProductDetail;
@@ -9,6 +10,8 @@ import com.commerceiq.scraper.service.ScrapingService;
 import com.commerceiq.scraper.util.UrlUtil;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +20,9 @@ import java.util.List;
 
 @Service
 public class ScrapingServiceImpl implements ScrapingService {
+
+    private static final Logger logger = LoggerFactory.getLogger(ScrapingServiceImpl.class);
+
     @Autowired
     UrlUtil urlUtil;
 
@@ -32,6 +38,7 @@ public class ScrapingServiceImpl implements ScrapingService {
     @Override
     public String getPageContent(String urlOrSku, Byte retailerId) throws IOException {
         String url = urlUtil.formUrl(urlOrSku, retailerId);
+        logger.info("Formed Url :: {}", url);
         Document pageHtml = getPageHtml(url);
         return pageHtml.toString();
     }
@@ -39,7 +46,7 @@ public class ScrapingServiceImpl implements ScrapingService {
     @Override
     public ProductDetailResponseDto getProductDetails(String urlOrSku, Byte retailerId) throws IOException {
         String url = urlUtil.formUrl(urlOrSku, retailerId);
-        List<ProductDetail> items = inMemDb.getProductDetails();
+        logger.info("Formed Url :: {}", url);
         Document pageHtml = getPageHtml(url);
         ProductDetailResponseDto productDetailResponseDto = detailResponseBuilder.build(pageHtml, retailerId);
         productDetailService.createEntry(productDetailResponseDto, url);
