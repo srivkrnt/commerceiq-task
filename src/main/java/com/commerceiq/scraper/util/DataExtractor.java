@@ -3,6 +3,7 @@ package com.commerceiq.scraper.util;
 import com.commerceiq.scraper.constants.AmazonConstants;
 import com.commerceiq.scraper.constants.LabelConstants;
 import com.commerceiq.scraper.dto.Retailer;
+import com.commerceiq.scraper.selectors.Selector;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.springframework.stereotype.Component;
@@ -13,30 +14,30 @@ import java.util.Objects;
 @Component
 public class DataExtractor {
 
-    public String getTitle(Document document, Retailer retailer) {
-        Element title = getContentUsingSelector(document, retailer.getSelector().getTitleSelector());
+    public String getTitle(Document document, Selector selector) {
+        Element title = getContentUsingSelector(document, selector.getTitleSelector());
         return handleIfNotAvailable(title);
     }
 
-    public String getOfferPrice(Document document , Retailer retailer) {
-        Element offerPrice = getContentUsingSelector(document, retailer.getSelector().getOfferPriceSelector());
+    public String getOfferPrice(Document document , Selector selector) {
+        Element offerPrice = getContentUsingSelector(document, selector.getOfferPriceSelector());
         return handleIfNotAvailable(offerPrice);
     }
 
-    public String getDescription(Document document, Retailer retailer) {
-        Element description = getContentUsingSelector(document, retailer.getSelector().getDescriptionSelector());
+    public String getDescription(Document document, Selector selector) {
+        Element description = getContentUsingSelector(document, selector.getDescriptionSelector());
         return handleIfNotAvailable(description);
     }
 
-    public Map<String, String> getRatingMap(Document document, Retailer retailer) {
+    public Map<String, String> getRatingMap(Document document, Selector selector) {
         Map<String, String> ratingsMap = new HashMap<>();
-        Element totalRating = getContentUsingSelector(document, retailer.getSelector().getTotalRatingSelector());
+        Element totalRating = getContentUsingSelector(document, selector.getTotalRatingSelector());
         String overallCount = getOverallCount(totalRating);
         ratingsMap.put(LabelConstants.OVERALL_COUNT, overallCount);
 
         Integer ratingIndex = 1;
         for(String rating: LabelConstants.RATINGS) {
-            Element ratingValue = getContentUsingSelector(document, getRatingSelectorByIndex(ratingIndex, retailer));
+            Element ratingValue = getContentUsingSelector(document, getRatingSelectorByIndex(ratingIndex, selector));
             ratingsMap.put(rating, handleIfNotAvailable(ratingValue));
             ratingIndex += 1;
         }
@@ -52,13 +53,13 @@ public class DataExtractor {
         return Objects.isNull(element) ? LabelConstants.NA : element.text();
     }
 
-    private String getRatingSelectorByIndex(Integer index, Retailer retailer) {
+    private String getRatingSelectorByIndex(Integer index, Selector selector) {
         return new StringBuilder()
-                .append(retailer.getSelector().getRatingSelector())
+                .append(selector.getRatingSelector())
                 .append("(")
                 .append(index)
                 .append(")")
-                .append(retailer.getSelector().getRatingPercentageSelector())
+                .append(selector.getRatingPercentageSelector())
                 .toString();
     }
 
